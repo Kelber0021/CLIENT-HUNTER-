@@ -52,29 +52,30 @@ export async function geocode(query: string, signal?: AbortSignal) {
   return await response.json() as { lat: string; lon: string; display_name: string; addresstype?: string }[]
 }
 
-export async function findLeads(lat: number, lon: number, radiusKm: number, category: string, signal?: AbortSignal): Promise<Lead[]> {
+export async function findLeads(lat: number, lon: number, radiusKm: number, category: string, signal?: AbortSignal): Promise<{ leads: Lead[]; sampled: boolean; sampledPoints: number }> {
   const around = `(around:${Math.round(radiusKm * 1000)},${lat},${lon})`
   const clauses = category === 'all'
     ? ['["amenity"~"^(restaurant|bar|fast_food|cafe|clinic|dentist|doctors|pharmacy)$"]', '["shop"]', '["leisure"~"^(fitness_centre|sports_centre)$"]', '["tourism"~"^(hotel|guest_house|hostel)$"]', '["office"]']
     : [filters[category]]
   const query = `[out:json][timeout:25];(${clauses.map(c => `nwr${c}${around};`).join('')});out center 350;`
-  type OsmData = { elements: { id: number; type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[] }
+  type OsmData = { elements: { id: number; type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[]; sampled?: boolean; sampledPoints?: number }
   let data: OsmData
   try {
     const response = await fetch('https://overpass.private.coffee/api/interpreter', { method: 'POST', body: new URLSearchParams({ data: query }), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(12000)]) : AbortSignal.timeout(12000) })
     if (!response.ok) throw new Error('Overpass unavailable')
     data = await response.json() as OsmData
   } catch {
-    const fallback = await fetch(`/api/osm-sample?lat=${lat}&lon=${lon}&category=${category}`, { signal })
+    const fallback = await fetch(`/api/osm-sample?lat=${lat}&lon=${lon}&category=${category}&radius=${radiusKm}`, { signal })
     if (!fallback.ok) throw new Error('As fontes de dados estão indisponíveis. Tente novamente em instantes.')
     data = await fallback.json() as OsmData
   }
-  return data.elements.filter(e => e.tags?.name && (e.lat !== undefined || e.center)).map(e => {
+  const leads: Lead[] = data.elements.filter(e => e.tags?.name && (e.lat !== undefined || e.center)).map(e => {
     const tags = e.tags || {}
     const point = e.center || { lat: e.lat!, lon: e.lon! }
     const street = [tags['addr:street'], tags['addr:housenumber']].filter(Boolean).join(', ')
-    return { id: `${e.type}/${e.id}`, name: tags.name, category: categoryOf(tags), address: street || tags['addr:full'] || 'Endereço não informado', city: tags['addr:city'] || '', lat: point.lat, lon: point.lon, phone: tags.phone || tags['contact:phone'], website: tags.website || tags['contact:website'], openingHours: tags.opening_hours, osmUrl: `https://www.openstreetmap.org/${e.type}/${e.id}`, source: 'OpenStreetMap', tags }
+    return { id: `${e.type}/${e.id}`, name: tags.name, category: categoryOf(tags), address: street || tags['addr:full'] || 'Endereço não informado', city: tags['addr:city'] || '', lat: point.lat, lon: point.lon, phone: tags.phone || tags['contact:phone'], website: tags.website || tags['contact:website'], openingHours: tags.opening_hours, osmUrl: `https://www.openstreetmap.org/${e.type}/${e.id}`, source: 'OpenStreetMap' as const, tags }
   })
+  return { leads, sampled: !!data.sampled, sampledPoints: data.sampledPoints || 0 }
 }
 
 export function score(lead: Lead) {
@@ -98,3 +99,4 @@ export function exportCsv(items: SavedLead[]) {
   const blob = new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' })
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'client-hunter-leads.csv'; a.click(); URL.revokeObjectURL(a.href)
 }
+

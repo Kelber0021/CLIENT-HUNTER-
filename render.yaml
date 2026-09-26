@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: client-hunter
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: client-hunter-db
+          property: connectionString
+      - key: APP_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+
+databases:
+  - name: client-hunter-db
+    databaseName: client_hunter
+    plan: free
