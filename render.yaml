@@ -13,8 +13,6 @@ services:
         fromDatabase:
           name: client-hunter-db
           property: connectionString
-      - key: APP_PASSWORD
-        sync: false
       - key: SESSION_SECRET
         generateValue: true
 
