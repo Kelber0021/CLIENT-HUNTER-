@@ -11,7 +11,7 @@ const port = Number(process.env.PORT || 4173)
 const sessionSecret = process.env.SESSION_SECRET || (!process.env.DATABASE_URL ? randomUUID() : null)
 const pool = process.env.DATABASE_URL ? new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 3 }) : null
 const stages = new Set(['novo', 'qualificado', 'contatado', 'negociando', 'ganho'])
-const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon' }
+const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.ico': 'image/x-icon' }
 
 if (pool) {
   if (!sessionSecret) throw new Error('SESSION_SECRET is required when DATABASE_URL is configured')
