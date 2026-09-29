@@ -86,7 +86,7 @@ export async function osmSample(lat, lon, category, radiusKm) {
     const point = element.center || element
     if (isCategory(element.tags, category) && distanceKm(point.lat, point.lon, lat, lon) <= radiusKm) unique.set(`${element.type}/${element.id}`, element)
   }
-  return { elements: [...unique.values()].slice(0, 350), sampled: true, sampledPoints: completedPoints, radiusKm }
+  return { elements: [...unique.values()], sampled: true, sampledPoints: completedPoints, radiusKm }
 }
 
 export async function handleSample(req, res) {

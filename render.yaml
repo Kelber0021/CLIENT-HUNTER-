@@ -15,6 +15,10 @@ services:
           property: connectionString
       - key: SESSION_SECRET
         generateValue: true
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: VITE_GOOGLE_MAPS_BROWSER_KEY
+        sync: false
 
 databases:
   - name: client-hunter-db

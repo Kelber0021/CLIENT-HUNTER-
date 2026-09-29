@@ -4,6 +4,7 @@ import { resolve, extname } from 'node:path'
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto'
 import pg from 'pg'
 import { handleSample } from './osm-sample.mjs'
+import { handleGooglePlaces, googlePlacesStatus } from './google-places.mjs'
 
 const dist = resolve('dist')
 const port = Number(process.env.PORT || 4173)
@@ -76,6 +77,8 @@ const server = createServer(async (req, res) => {
     const url = new URL(req.url || '/', 'http://localhost')
     if (url.pathname === '/api/health') { json(res, 200, { ok: true, database: !!pool }); return }
     if (url.pathname === '/api/osm-sample' && req.method === 'GET') { await handleSample(req, res); return }
+    if (url.pathname === '/api/google-places/status') { googlePlacesStatus(req, res); return }
+    if (url.pathname === '/api/google-places') { await handleGooglePlaces(req, res); return }
     if (url.pathname === '/api/session') {
       if (req.method === 'GET' || req.method === 'POST') { if (session(req, res)) json(res, 200, { databaseConfigured: !!pool, authenticated: true }); return }
       if (req.method === 'DELETE') { if (sessionSecret) { const id = randomUUID(); setCookie(res, id, req); json(res, 200, { databaseConfigured: !!pool, authenticated: true }) } else json(res, 503, { error: 'Sessão não configurada.' }); return }

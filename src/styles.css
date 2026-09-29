@@ -570,3 +570,38 @@ textarea:focus-visible {
   }
 }
 
+/* Two result sources remain visually separate, so the map never suggests Google data is OSM data. */
+.source-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--atlas-line, #dfe5df); background: #f7f8f5; }
+.source-tabs button { flex: 1; border: 0; border-bottom: 2px solid transparent; background: transparent; padding: 12px 15px; color: #687875; font: 700 11px 'Space Grotesk', sans-serif; text-align: left; cursor: pointer; }
+.source-tabs button.active { border-bottom-color: #d87550; color: #243740; background: #fff; }
+.source-tabs b { margin-left: 6px; color: #d87550; }
+.google-results { min-height: 300px; background: #fff; }
+.google-attribution { display: inline-block; margin: 15px 18px 3px; color: #5e5e5e; font: 400 13px Roboto, Arial, sans-serif; white-space: nowrap; }
+.google-coverage { margin: 0; padding: 3px 18px 15px; color: #788882; font-size: 11px; line-height: 1.5; border-bottom: 1px solid #e6eae5; }
+.google-list { max-height: 540px; overflow: auto; }
+.google-place { display: flex; gap: 12px; align-items: center; padding: 13px 17px; border-bottom: 1px solid #e9ede8; color: #233840; text-decoration: none; transition: background .18s ease, padding-left .18s ease; }
+.google-place:hover { background: #f5f6f1; padding-left: 21px; }
+.google-place-icon { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 7px; color: #cf704e; background: #f3e8df; }
+.google-place-body { display: grid; min-width: 0; gap: 3px; flex: 1; }
+.google-place-body small { color: #d06c4b; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
+.google-place-body strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.google-place-body > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #80908b; font-size: 11px; }
+.google-place-body em { display: flex; align-items: center; gap: 4px; color: #a15c35; font-size: 10px; font-style: normal; }
+.google-empty, .google-error { padding: 25px 18px; color: #74837e; font-size: 12px; }
+.google-error { color: #a84d36; }
+.google-sort-note { align-self: center; color: #80908b; font-size: 11px; white-space: nowrap; }
+.google-map-panel { min-height: 440px; border: 1px solid #dfe5df; border-radius: 10px; background: radial-gradient(circle at 80% 15%, #f8ddc7, transparent 40%), #f4f3ec; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 35px; color: #253b41; }
+.google-map-panel .google-attribution { margin: 0 0 38px; }
+.google-map-panel > svg { color: #d87550; }
+.google-map-panel h3 { margin: 14px 0 8px; font: 700 25px 'Space Grotesk', sans-serif; letter-spacing: -.04em; }
+.google-map-panel p { max-width: 360px; color: #72817c; font-size: 12px; line-height: 1.6; }
+.google-map-panel a { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 11px 14px; border-radius: 7px; background: #df7852; color: #fff; font-size: 11px; font-weight: 700; text-decoration: none; }
+:root[data-theme=dark] .source-tabs, :root[data-theme=dark] .google-results { background: #1b292d; }
+:root[data-theme=dark] .source-tabs button.active { background: #25363a; color: #eef4ef; }
+:root[data-theme=dark] .google-place { border-color: #304046; color: #edf3ee; }
+:root[data-theme=dark] .google-place:hover { background: #2b3d40; }
+:root[data-theme=dark] .google-place-icon { background: #45372f; }
+:root[data-theme=dark] .google-attribution { color: #fff; }
+:root[data-theme=dark] .google-map-panel { background: radial-gradient(circle at 80% 15%, #5b4638, transparent 40%), #203034; border-color: #33464a; color: #eef4ef; }
+@media (max-width: 600px) { .google-map-panel { min-height: 260px; padding: 23px; } .google-map-panel .google-attribution { margin-bottom: 18px; } }
+

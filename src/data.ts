@@ -57,14 +57,18 @@ export async function findLeads(lat: number, lon: number, radiusKm: number, cate
   const clauses = category === 'all'
     ? ['["amenity"~"^(restaurant|bar|fast_food|cafe|clinic|dentist|doctors|pharmacy)$"]', '["shop"]', '["leisure"~"^(fitness_centre|sports_centre)$"]', '["tourism"~"^(hotel|guest_house|hostel)$"]', '["office"]']
     : [filters[category]]
-  const query = `[out:json][timeout:25];(${clauses.map(c => `nwr${c}${around};`).join('')});out center 350;`
+  // Filtrar nomes na própria consulta evita baixar objetos que não serão exibidos.
+  // "out center" sem número devolve toda a área; o antigo limite de 350 cortava
+  // os resultados de modo silencioso, sobretudo em regiões densas e raios grandes.
+  const query = `[out:json][timeout:20];(${clauses.map(c => `nwr${c}["name"]${around};`).join('')});out center qt;`
   type OsmData = { elements: { id: number; type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }[]; sampled?: boolean; sampledPoints?: number }
   let data: OsmData
   try {
-    const response = await fetch('https://overpass.private.coffee/api/interpreter', { method: 'POST', body: new URLSearchParams({ data: query }), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(12000)]) : AbortSignal.timeout(12000) })
+    const response = await fetch('https://overpass.private.coffee/api/interpreter', { method: 'POST', body: new URLSearchParams({ data: query }), signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(22000)]) : AbortSignal.timeout(22000) })
     if (!response.ok) throw new Error('Overpass unavailable')
     data = await response.json() as OsmData
   } catch {
+    if (signal?.aborted) throw signal.reason
     const fallback = await fetch(`/api/osm-sample?lat=${lat}&lon=${lon}&category=${category}&radius=${radiusKm}`, { signal })
     if (!fallback.ok) throw new Error('As fontes de dados estão indisponíveis. Tente novamente em instantes.')
     data = await fallback.json() as OsmData

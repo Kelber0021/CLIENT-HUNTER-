@@ -1,0 +1,23 @@
+.google-places-map-shell {
+  width: 100%;
+  min-height: 350px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #e8e6e0;
+}
+
+.google-places-map-canvas {
+  width: 100%;
+  height: clamp(350px, 50vh, 600px);
+}
+
+.google-places-map-error {
+  display: grid;
+  min-height: 350px;
+  padding: 28px;
+  place-items: center;
+  color: #283b41;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.5;
+}
