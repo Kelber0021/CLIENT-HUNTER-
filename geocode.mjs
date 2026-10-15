@@ -9,6 +9,8 @@ let queue = Promise.resolve()
 let lastCall = 0
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 const buckets = new Map()
+// Shared hosting IPs get rate limited by Nominatim; while blocked, answer 503 at once so the browser asks Nominatim itself.
+let blockedUntil = 0
 
 function json(res, status, body, cacheControl = 'no-store') {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': cacheControl })
@@ -64,6 +66,7 @@ export async function handleGeocode(req, res) {
     return json(res, 200, hit.value, 'public, max-age=3600')
   }
   if (limited(req)) return json(res, 429, { error: 'Muitas buscas de endereço em pouco tempo. Aguarde um minuto.' })
+  if (Date.now() < blockedUntil) return json(res, 503, { error: 'Busca de endereço do servidor pausada. Tente pelo navegador.' })
   try {
     let promise = pending.get(key)
     if (!promise) {
@@ -78,6 +81,7 @@ export async function handleGeocode(req, res) {
     json(res, 200, await promise, 'public, max-age=3600')
   } catch (error) {
     console.error('Nominatim failed:', error?.message || error)
+    if (/HTTP (403|429)/.test(String(error?.message))) blockedUntil = Date.now() + 10 * 60_000
     json(res, 502, { error: 'Não foi possível buscar esse local agora. Tente novamente em instantes.' })
   }
 }
