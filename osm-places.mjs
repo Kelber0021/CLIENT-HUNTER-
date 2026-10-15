@@ -6,6 +6,14 @@ export const USER_AGENT = 'ClientHunter/0.3 (+https://github.com/Kelber0021/CLIE
 
 const GRID = 0.05
 const FRESH_MS = 7 * 86_400_000
+// Some mirrors lag months behind; their answers are kept only briefly so a current mirror gets another chance soon.
+const OUTDATED_DATA_MS = 14 * 86_400_000
+const OUTDATED_FRESH_MS = 12 * 3_600_000
+const isFresh = (entry, now) => {
+  const age = Date.parse(entry.dataTimestamp || '')
+  const ttl = Number.isFinite(age) && now - age > OUTDATED_DATA_MS ? OUTDATED_FRESH_MS : FRESH_MS
+  return now - entry.fetchedAt < ttl
+}
 const MEMORY_TILES = 600
 const MEMORY_LEADS = 200_000 // keeps a few very dense tiles from exhausting a 512 MB instance
 const MAX_TILES = 150
@@ -477,7 +485,7 @@ export async function handlePlaces(req, res, { pool = null } = {}) {
     const fresh = [], stale = new Map(), missing = []
     for (const t of tiles) {
       const entry = found.get(t.key)
-      if (entry && started - entry.fetchedAt < FRESH_MS) fresh.push(entry)
+      if (entry && isFresh(entry, started)) fresh.push(entry)
       else { if (entry) stale.set(t.key, entry); missing.push(t) }
     }
     stats.cacheHits += fresh.length
