@@ -1,22 +1,14 @@
+import { CATEGORIES, USER_AGENT, classify } from './osm-places.mjs'
+
 const decode = value => value.replaceAll('&quot;', '"').replaceAll('&apos;', "'").replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&amp;', '&')
 const attrs = xml => Object.fromEntries([...xml.matchAll(/([\w:]+)="([^"]*)"/g)].map(([, k, v]) => [k, decode(v)]))
-const wanted = t => !!(t.name && (['restaurant', 'bar', 'fast_food', 'cafe', 'clinic', 'dentist', 'doctors', 'pharmacy'].includes(t.amenity) || t.shop || ['fitness_centre', 'sports_centre'].includes(t.leisure) || ['hotel', 'guest_house', 'hostel'].includes(t.tourism) || t.office))
-const isCategory = (t, category) => {
-  if (category === 'all') return true
-  if (category === 'restaurant') return ['restaurant', 'bar', 'fast_food'].includes(t.amenity)
-  if (category === 'cafe') return t.amenity === 'cafe' || t.shop === 'bakery'
-  if (category === 'shop') return !!t.shop
-  if (category === 'beauty') return ['beauty', 'hairdresser', 'cosmetics'].includes(t.shop)
-  if (category === 'health') return ['clinic', 'dentist', 'doctors', 'pharmacy'].includes(t.amenity)
-  if (category === 'fitness') return ['fitness_centre', 'sports_centre'].includes(t.leisure)
-  if (category === 'hotel') return ['hotel', 'guest_house', 'hostel'].includes(t.tourism)
-  if (category === 'office') return !!t.office
-  return true
-}
+// Same taxonomy as /api/places; osm-places.mjs only imports this module lazily (no static cycle).
+const wanted = t => !!(typeof t.name === 'string' && t.name.trim() && classify(t))
+const isCategory = (t, category) => category === 'all' || !Object.hasOwn(CATEGORIES, category) || classify(t) === category
 const tileCache = new Map()
 async function osmTile(lat, lon, half = 0.009, depth = 0) {
   const bbox = [lon - half, lat - half, lon + half, lat + half].join(',')
-  const response = await fetch(`https://api.openstreetmap.org/api/0.6/map?bbox=${bbox}`, { signal: AbortSignal.timeout(25000), headers: { 'User-Agent': 'ClientHunter/0.1 (local development)' } })
+  const response = await fetch(`https://api.openstreetmap.org/api/0.6/map?bbox=${bbox}`, { signal: AbortSignal.timeout(25000), headers: { 'User-Agent': USER_AGENT } })
   if (response.status === 400 && depth < 1) {
     const reason = await response.text()
     if (reason.includes('too many nodes')) {

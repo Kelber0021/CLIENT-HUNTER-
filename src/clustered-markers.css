@@ -1,13 +1,51 @@
-.leaflet-tooltip.lead-cluster-count {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
+/* Clusters are small pies: the coloured ring shows which segments share that spot. */
+.lead-cluster { background: none; border: 0; }
+.lead-cluster-ring {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #fff, 0 6px 16px #10202959;
+  cursor: pointer;
+  animation: ch-pop .3s cubic-bezier(.2, .9, .3, 1.35) both;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.lead-cluster-ring b {
+  display: grid;
+  place-items: center;
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
+  border-radius: 50%;
+  background: #172b34;
   color: #fff;
-  font: 700 12px/1.1 system-ui, sans-serif;
-  pointer-events: none;
-  text-align: center;
+  font: 700 11px/1 'Space Grotesk', sans-serif;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+}
+.lead-cluster:hover .lead-cluster-ring { transform: scale(1.09); box-shadow: 0 0 0 2px #fff, 0 9px 22px #10202970; }
+.lead-cluster.contains-selected .lead-cluster-ring b { background: #da704c; }
+
+/* A soft sonar ring answers the click on a place. */
+.lead-selected-pulse { background: none; border: 0; pointer-events: none; }
+.lead-selected-pulse span {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #172b34;
+  border-radius: 50%;
+  animation: ch-sonar 1.6s ease-out infinite;
 }
 
-.leaflet-tooltip.lead-cluster-count::before {
-  display: none;
+.leaflet-tooltip {
+  border: 0;
+  border-radius: 7px;
+  padding: 6px 9px;
+  background: #172b34;
+  color: #fff;
+  font: 600 11px 'DM Sans', sans-serif;
+  box-shadow: 0 6px 18px #10202940;
 }
+.leaflet-tooltip-top::before { border-top-color: #172b34; }
+
+@keyframes ch-pop { from { transform: scale(.45); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes ch-sonar { 0% { transform: scale(.35); opacity: .9; } 100% { transform: scale(1.25); opacity: 0; } }
